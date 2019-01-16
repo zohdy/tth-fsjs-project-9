@@ -3,6 +3,11 @@
 // load modules
 const express = require('express');
 const morgan = require('morgan');
+const bodyParser = require('body-parser').json;
+const mongoose = require('mongoose');
+const routes = require('./routes');
+const courseRoutes = require('./routes/courseRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
@@ -10,17 +15,19 @@ const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'tr
 // create the Express app
 const app = express();
 
-// setup morgan which gives us http request logging
 app.use(morgan('dev'));
+app.use(bodyParser());
 
-// TODO setup your api routes here
+// DB Config
+const db = require('./config/keys').mongoURI;
 
-// setup a friendly greeting for the root route
-app.get('/', (req, res) => {
-  res.json({
-    message: 'Welcome to the REST API project!',
-  });
-});
+
+// Use Routes
+app.get('/', (req, res) => res.redirect(('/api')));
+app.use('/api', routes);
+app.use('/api/users', userRoutes);
+app.use('/api/courses', courseRoutes);
+
 
 // send 404 if no other route matched
 app.use((req, res) => {
@@ -48,3 +55,10 @@ app.set('port', process.env.PORT || 5000);
 const server = app.listen(app.get('port'), () => {
   console.log(`Express server is listening on port ${server.address().port}`);
 });
+
+// Connect to Mongo
+mongoose.connect(db, {useNewUrlParser: true})
+    .then(() => console.log(`Connected to Db ${db}`))
+    .catch(err => console.log(`Error while trying to connect to ${db}, ${err}`));
+
+
