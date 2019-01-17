@@ -18,9 +18,11 @@ router.get('/', (req, res, next) => {
 // @desc    Returns a the course for the provided course ID
 // @access  Public
 router.get('/:id', (req, res, next) => {
-    Course.findById(req.params.id, (err, course) => {
-        if(err) return next(err);
-        res.json(course);
+    Course.findById(req.params.id)
+        .populate('user')
+        .exec((err, course) => {
+            if(err) return next(err);
+            res.json(course);
     });
 });
 
